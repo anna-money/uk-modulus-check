@@ -1,21 +1,42 @@
+.EXPORT_ALL_VARIABLES:
+DIRECTORY = uk_modulus_check
+
 all: deps lint test
 
 deps:
 	@python3 -m pip install --upgrade pip && pip3 install -r requirements-dev.txt
 
-black:
-	@black --line-length 120 uk_modulus_check tests
-
-isort:
-	@isort --line-length 120 --use-parentheses --multi-line 3 --combine-as --trailing-comma uk_modulus_check tests
+lint: black isort flake8 mypy
 
 mypy:
-	@mypy --strict --ignore-missing-imports uk_modulus_check
+	mypy $(DIRECTORY)
+	mypy tests
 
 flake8:
-	@flake8 --max-line-length 120 --ignore C901,C812,E203 --extend-ignore W503 uk_modulus_check tests
+	flake8 $(DIRECTORY)
+	flake8 tests
+	flake8 setup.py
 
-lint: black isort flake8 mypy
+black:
+ifeq ($(MODE), ci)
+	black $(DIRECTORY) --check
+	black tests --check
+	black setup.py --check
+else
+	black $(DIRECTORY)
+	black tests
+	black setup.py
+endif
+
+isort:
+ifeq ($(MODE), ci)
+	isort $(DIRECTORY) -c
+	isort tests -c
+else
+	isort $(DIRECTORY)
+	isort tests
+	isort setup.py
+endif
 
 test:
 	@python3 -m pytest -vv --rootdir tests .
