@@ -38,5 +38,4 @@ setup(
     package_dir={"uk_modulus_check": "./uk_modulus_check"},
     package_data={"uk_modulus_check": ["py.typed"]},
     include_package_data=True,
-    exclude_package_data={"data": ["data/*.txt"]},
 )
