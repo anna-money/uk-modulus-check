@@ -1,8 +1,6 @@
 import dataclasses
 import enum
 
-from .base_table import BaseTable
-
 
 class ModMode(str, enum.Enum):
     Mod10 = "MOD10"
@@ -37,7 +35,7 @@ class ModRule:
     exception: int | None
 
 
-class WeightTable(BaseTable):
+class WeightTable:
     __slots__ = ("_mod_rules",)
 
     def __init__(self) -> None:
