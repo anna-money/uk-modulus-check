@@ -15,7 +15,7 @@ class SortCodeSubstitutionTable(BaseTable):
     def __init__(self) -> None:
         self._sort_code_substitutions: dict[int, int] = {}
 
-    def load(self, lines: list[str]) -> None:
+    def reload(self, lines: list[str]) -> None:
         lst = [self._parse_line(line) for line in lines]
         self._sort_code_substitutions = {x.orig_code: x.new_code for x in lst}
 

@@ -63,10 +63,10 @@ def test_validate() -> None:
     ]
 
     weight_table = WeightTable()
-    weight_table.load(_read_file(WEIGHTS))
+    weight_table.reload(_read_file(WEIGHTS))
 
     sort_code_substitution_table = SortCodeSubstitutionTable()
-    sort_code_substitution_table.load(_read_file(SUBSTITUTIONS))
+    sort_code_substitution_table.reload(_read_file(SUBSTITUTIONS))
 
     checker = UKModulusChecker(weight_table, sort_code_substitution_table)
 

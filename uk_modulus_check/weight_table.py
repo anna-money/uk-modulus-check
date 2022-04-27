@@ -43,7 +43,7 @@ class WeightTable(BaseTable):
     def __init__(self) -> None:
         self._mod_rules: list[ModRule] = []
 
-    def load(self, lines: list[str]) -> None:
+    def reload(self, lines: list[str]) -> None:
         lst = [self._parse_line(line) for line in lines]
         self._mod_rules = lst
 

@@ -3,5 +3,5 @@ import abc
 
 class BaseTable(abc.ABC):
     @abc.abstractmethod
-    def load(self, lines: list[str]) -> None:
+    def reload(self, lines: list[str]) -> None:
         ...
