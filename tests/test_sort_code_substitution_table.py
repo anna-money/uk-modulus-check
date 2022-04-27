@@ -3,7 +3,7 @@ import pytest
 from uk_modulus_check import SortCodeSubstitutionTable
 
 
-def test_load():
+def test_load() -> None:
     table = SortCodeSubstitutionTable()
 
     table.load(["1 2", "3 4"])
@@ -16,7 +16,7 @@ def test_load():
         table.load(["12"])
 
 
-def test_try_get_substitution():
+def test_try_get_substitution() -> None:
     table = SortCodeSubstitutionTable()
     table.load(["1 2", "3 4"])
 

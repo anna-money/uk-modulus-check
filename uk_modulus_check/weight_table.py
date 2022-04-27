@@ -99,5 +99,9 @@ class WeightTable(BaseTable):
             exception = None
 
         return ModRule(
-            start_code=start_code, end_code=end_code, mod_mode=mod_mode, weights=weights, exception=exception
+            start_code=start_code,
+            end_code=end_code,
+            mod_mode=mod_mode,
+            weights=weights,
+            exception=exception,
         )

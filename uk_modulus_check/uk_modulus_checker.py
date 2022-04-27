@@ -17,16 +17,26 @@ class UKModulusChecker:
         "_sort_code_substitution_table",
     )
 
-    def __init__(self, weight_table: WeightTable, sort_code_substitution_table: SortCodeSubstitutionTable) -> None:
+    def __init__(
+        self,
+        weight_table: WeightTable,
+        sort_code_substitution_table: SortCodeSubstitutionTable,
+    ) -> None:
         self._weight_table = weight_table
         self._sort_code_substitution_table = sort_code_substitution_table
 
     @staticmethod
     def _calc_mod_dblal(
-        weighted_sort_code_parts: list[int], weighted_account_number_parts: list[int], rule: ModRule
+        weighted_sort_code_parts: list[int],
+        weighted_account_number_parts: list[int],
+        rule: ModRule,
     ) -> int:
-        weighted_sort_code_digits = [int(d) for x in weighted_sort_code_parts for d in str(x)]
-        weighted_account_number_digits = [int(d) for x in weighted_account_number_parts for d in str(x)]
+        weighted_sort_code_digits = [
+            int(d) for x in weighted_sort_code_parts for d in str(x)
+        ]
+        weighted_account_number_digits = [
+            int(d) for x in weighted_account_number_parts for d in str(x)
+        ]
         weighted_sum = sum(weighted_sort_code_digits + weighted_account_number_digits)
 
         if rule.exception == 1:
@@ -35,18 +45,30 @@ class UKModulusChecker:
         return weighted_sum % 10
 
     @staticmethod
-    def _calc_mod10(weighted_sort_code_parts: list[int], weighted_account_number_parts: list[int]) -> int:
+    def _calc_mod10(
+        weighted_sort_code_parts: list[int], weighted_account_number_parts: list[int]
+    ) -> int:
         weighted_sum = sum(weighted_sort_code_parts + weighted_account_number_parts)
         return weighted_sum % 10
 
     @staticmethod
-    def _calc_mod11(weighted_sort_code_parts: list[int], weighted_account_number_parts: list[int]) -> int:
+    def _calc_mod11(
+        weighted_sort_code_parts: list[int], weighted_account_number_parts: list[int]
+    ) -> int:
         weighted_sum = sum(weighted_sort_code_parts + weighted_account_number_parts)
         return weighted_sum % 11
 
-    def _calc_mod(self, sort_code: int, account_number: int, rule: ModRule, exception_14: bool = False) -> bool:
+    def _calc_mod(
+        self,
+        sort_code: int,
+        account_number: int,
+        rule: ModRule,
+        exception_14: bool = False,
+    ) -> bool:
         if rule.exception == 5:
-            new_sort_code = self._sort_code_substitution_table.try_get_substitution(sort_code)
+            new_sort_code = self._sort_code_substitution_table.try_get_substitution(
+                sort_code
+            )
             if new_sort_code is not None:
                 sort_code = new_sort_code
 
@@ -121,12 +143,19 @@ class UKModulusChecker:
                 ]
 
         if rule.exception == 10:
-            if account_number_parts[0] in (0, 9) and account_number_parts[1] == 9 and account_number_parts[6] == 9:
+            if (
+                account_number_parts[0] in (0, 9)
+                and account_number_parts[1] == 9
+                and account_number_parts[6] == 9
+            ):
                 weighted_sort_code_parts = [0, 0, 0, 0, 0, 0]
                 weighted_account_number_parts[0] = 0
                 weighted_account_number_parts[1] = 0
         elif rule.exception == 6:
-            if account_number_parts[0] in (4, 5, 6, 7, 8) and account_number_parts[6] == account_number_parts[7]:
+            if (
+                account_number_parts[0] in (4, 5, 6, 7, 8)
+                and account_number_parts[6] == account_number_parts[7]
+            ):
                 return True
         elif rule.exception == 7:
             if account_number_parts[6] == 9:
@@ -138,11 +167,17 @@ class UKModulusChecker:
             if rule.exception == 3:
                 if account_number_parts[2] in (6, 9):
                     return True
-            remainder = self._calc_mod_dblal(weighted_sort_code_parts, weighted_account_number_parts, rule)
+            remainder = self._calc_mod_dblal(
+                weighted_sort_code_parts, weighted_account_number_parts, rule
+            )
         elif rule.mod_mode == ModMode.Mod10:
-            remainder = self._calc_mod10(weighted_sort_code_parts, weighted_account_number_parts)
+            remainder = self._calc_mod10(
+                weighted_sort_code_parts, weighted_account_number_parts
+            )
         else:
-            remainder = self._calc_mod11(weighted_sort_code_parts, weighted_account_number_parts)
+            remainder = self._calc_mod11(
+                weighted_sort_code_parts, weighted_account_number_parts
+            )
 
         if rule.exception == 4:
             check_digit = int(f"{account_number_parts[6]}{account_number_parts[7]}")
@@ -166,7 +201,9 @@ class UKModulusChecker:
     def validate(self, sort_code: int, account_number: int) -> ValidationResult:
         sort_code_rules = self._weight_table.try_get_rules(sort_code)
         if not len(sort_code_rules):
-            return ValidationResult(result=True, known_sort_code=False, substitute_sort_code=None)
+            return ValidationResult(
+                result=True, known_sort_code=False, substitute_sort_code=None
+            )
 
         exception_2_9 = False
         exception_10_11 = False
@@ -174,32 +211,54 @@ class UKModulusChecker:
         if len(sort_code_rules) >= 2:
             if sort_code_rules[0].exception == 2 and sort_code_rules[1].exception == 9:
                 exception_2_9 = True
-            if sort_code_rules[0].exception == 10 and sort_code_rules[1].exception == 11:
+            if (
+                sort_code_rules[0].exception == 10
+                and sort_code_rules[1].exception == 11
+            ):
                 exception_10_11 = True
-            if sort_code_rules[0].exception == 12 and sort_code_rules[1].exception == 13:
+            if (
+                sort_code_rules[0].exception == 12
+                and sort_code_rules[1].exception == 13
+            ):
                 exception_12_13 = True
 
         for rule in sort_code_rules:
             if rule.exception == 9:
                 mod_pass = self._calc_mod(309634, account_number, rule)
                 if mod_pass:
-                    return ValidationResult(result=True, known_sort_code=True, substitute_sort_code=309634)
+                    return ValidationResult(
+                        result=True, known_sort_code=True, substitute_sort_code=309634
+                    )
             else:
                 mod_pass = self._calc_mod(sort_code, account_number, rule)
             if exception_10_11 or exception_12_13 or exception_2_9:
                 if mod_pass:
-                    return ValidationResult(result=True, known_sort_code=True, substitute_sort_code=None)
+                    return ValidationResult(
+                        result=True, known_sort_code=True, substitute_sort_code=None
+                    )
             elif rule.exception == 14:
                 if mod_pass:
-                    return ValidationResult(result=True, known_sort_code=True, substitute_sort_code=None)
+                    return ValidationResult(
+                        result=True, known_sort_code=True, substitute_sort_code=None
+                    )
                 else:
-                    mod_pass = self._calc_mod(sort_code, account_number, rule, exception_14=True)
-                    return ValidationResult(result=mod_pass, known_sort_code=True, substitute_sort_code=None)
+                    mod_pass = self._calc_mod(
+                        sort_code, account_number, rule, exception_14=True
+                    )
+                    return ValidationResult(
+                        result=mod_pass, known_sort_code=True, substitute_sort_code=None
+                    )
             else:
                 if not mod_pass:
-                    return ValidationResult(result=False, known_sort_code=True, substitute_sort_code=None)
+                    return ValidationResult(
+                        result=False, known_sort_code=True, substitute_sort_code=None
+                    )
 
         if exception_10_11 or exception_12_13 or exception_2_9:
-            return ValidationResult(result=False, known_sort_code=True, substitute_sort_code=None)
+            return ValidationResult(
+                result=False, known_sort_code=True, substitute_sort_code=None
+            )
         else:
-            return ValidationResult(result=True, known_sort_code=True, substitute_sort_code=None)
+            return ValidationResult(
+                result=True, known_sort_code=True, substitute_sort_code=None
+            )

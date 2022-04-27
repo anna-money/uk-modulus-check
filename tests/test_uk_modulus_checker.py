@@ -21,7 +21,7 @@ def _read_file(path: pathlib.Path) -> list[str]:
         return file.readlines()
 
 
-def test_validate():
+def test_validate() -> None:
     test_cases = [
         TestCase(sort_code="89999", account_number="66374958", expected_result=True),
         TestCase(sort_code="107999", account_number="88837491", expected_result=True),
@@ -73,4 +73,6 @@ def test_validate():
     for case in test_cases:
         result = checker.validate(int(case.sort_code), int(case.account_number))
         if result.result != case.expected_result:
-            print(f"FAIL: S/C {case.sort_code} A/N {case.account_number} expected {case.expected_result} got {result}")
+            print(
+                f"FAIL: S/C {case.sort_code} A/N {case.account_number} expected {case.expected_result} got {result}"
+            )
