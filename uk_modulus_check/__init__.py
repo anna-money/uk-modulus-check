@@ -3,14 +3,11 @@ import re
 import sys
 from typing import Tuple
 
-from .base_table import BaseTable  # noqa
 from .sort_code_substitution_table import SortCodeSubstitutionTable  # noqa
 from .uk_modulus_checker import UKModulusChecker  # noqa
 from .weight_table import WeightTable  # noqa
 
 __all__: Tuple[str, ...] = (
-    # base_table.py
-    "BaseTable",
     # sort_code_substitution_table.py
     "SortCodeSubstitutionTable",
     # uk_modulus_checker.py

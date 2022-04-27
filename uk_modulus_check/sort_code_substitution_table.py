@@ -1,7 +1,5 @@
 import dataclasses
 
-from .base_table import BaseTable
-
 
 @dataclasses.dataclass(slots=True, frozen=True, kw_only=True)
 class SortCodeSubstitution:
@@ -9,7 +7,7 @@ class SortCodeSubstitution:
     new_code: int
 
 
-class SortCodeSubstitutionTable(BaseTable):
+class SortCodeSubstitutionTable:
     __slots__ = ("_sort_code_substitutions",)
 
     def __init__(self) -> None:
