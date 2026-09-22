@@ -8,25 +8,25 @@ class SortCodeSubstitution:
 
 
 class SortCodeSubstitutionTable:
-    __slots__ = ("_sort_code_substitutions",)
+    __slots__ = ("__sort_code_substitutions",)
 
     def __init__(self) -> None:
-        self._sort_code_substitutions: dict[int, int] = {}
+        self.__sort_code_substitutions: dict[int, int] = {}
 
     def reload(self, lines: list[str]) -> None:
-        lst = [self._parse_line(line) for line in lines]
-        self._sort_code_substitutions = {x.orig_code: x.new_code for x in lst}
+        lst = [self.__parse_line(line) for line in lines]
+        self.__sort_code_substitutions = {x.orig_code: x.new_code for x in lst}
 
     def try_get_substitution(self, sort_code: int) -> int | None:
-        if sort_code in self._sort_code_substitutions:
-            return self._sort_code_substitutions[sort_code]
+        if sort_code in self.__sort_code_substitutions:
+            return self.__sort_code_substitutions[sort_code]
         return None
 
     def length(self) -> int:
-        return len(self._sort_code_substitutions)
+        return len(self.__sort_code_substitutions)
 
-    @staticmethod
-    def _parse_line(line: str) -> SortCodeSubstitution:
+    @classmethod
+    def __parse_line(cls, line: str) -> SortCodeSubstitution:
         parts = line.split()
         if len(parts) != 2:
             raise ValueError(f"Invalid record: {line}")

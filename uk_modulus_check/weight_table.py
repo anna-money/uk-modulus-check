@@ -2,7 +2,7 @@ import dataclasses
 import enum
 
 
-class ModMode(str, enum.Enum):
+class ModMode(enum.StrEnum):
     Mod10 = "MOD10"
     Mod11 = "MOD11"
     DblAl = "DBLAL"
@@ -36,23 +36,23 @@ class ModRule:
 
 
 class WeightTable:
-    __slots__ = ("_mod_rules",)
+    __slots__ = ("__mod_rules",)
 
     def __init__(self) -> None:
-        self._mod_rules: list[ModRule] = []
+        self.__mod_rules: list[ModRule] = []
 
     def reload(self, lines: list[str]) -> None:
-        lst = [self._parse_line(line) for line in lines]
-        self._mod_rules = lst
+        lst = [self.__parse_line(line) for line in lines]
+        self.__mod_rules = lst
 
     def length(self) -> int:
-        return len(self._mod_rules)
+        return len(self.__mod_rules)
 
     def try_get_rules(self, sort_code: int) -> list[ModRule]:
-        return [x for x in self._mod_rules if x.start_code <= sort_code <= x.end_code]
+        return [x for x in self.__mod_rules if x.start_code <= sort_code <= x.end_code]
 
-    @staticmethod
-    def _parse_weights(parts: list[str]) -> Weights:
+    @classmethod
+    def __parse_weights(cls, parts: list[str]) -> Weights:
         return Weights(
             u=int(parts[0]),
             v=int(parts[1]),
@@ -70,8 +70,8 @@ class WeightTable:
             h=int(parts[13]),
         )
 
-    @staticmethod
-    def _parse_line(line: str) -> ModRule:
+    @classmethod
+    def __parse_line(cls, line: str) -> ModRule:
         parts = line.split()
         if len(parts) not in (17, 18):
             raise ValueError(f"Invalid record: {line}")
@@ -84,7 +84,7 @@ class WeightTable:
             raise ValueError(f"Invalid record: {line}")
 
         try:
-            weights = WeightTable._parse_weights(parts[3:17])
+            weights = cls.__parse_weights(parts[3:17])
         except ValueError:
             raise ValueError(f"Invalid record: {line}")
 
