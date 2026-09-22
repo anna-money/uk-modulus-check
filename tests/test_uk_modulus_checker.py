@@ -73,9 +73,13 @@ def _unknown_sort_code() -> ValidationResult:
         ("70116", "34012583", _passed()),
         ("74456", "11104102", _passed()),
         ("180002", "190", _passed()),
-        # ANNA: 040344 is absent from weights.txt, so these pass without a modulus check.
-        ("040344", "00000023", _unknown_sort_code()),
-        ("040344", "000000120", _unknown_sort_code()),
+        # ANNA: 040344 is a MOD10 rule; 00000020 is a synthetic number that satisfies it.
+        ("040344", "00000023", _failed()),
+        ("040344", "000000120", _failed()),
+        ("040344", "00000020", _passed()),
+        ("231185", "00002221", _passed()),
+        # 050095 was carved out of 050022-058999, so it has no rule and is not checked.
+        ("050095", "12345678", _unknown_sort_code()),
     ],
 )
 def test_validate(
