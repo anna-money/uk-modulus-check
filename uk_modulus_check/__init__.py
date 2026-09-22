@@ -4,16 +4,20 @@ import sys
 from typing import Tuple
 
 from .sort_code_substitution_table import SortCodeSubstitutionTable  # noqa
-from .uk_modulus_checker import UKModulusChecker  # noqa
-from .weight_table import WeightTable  # noqa
+from .uk_modulus_checker import UKModulusChecker, ValidationResult  # noqa
+from .weight_table import ModMode, ModRule, WeightTable, Weights  # noqa
 
 __all__: Tuple[str, ...] = (
     # sort_code_substitution_table.py
     "SortCodeSubstitutionTable",
     # uk_modulus_checker.py
     "UKModulusChecker",
+    "ValidationResult",
     # weight_table.py
+    "ModMode",
+    "ModRule",
     "WeightTable",
+    "Weights",
 )
 
 __version__ = "0.0.1"

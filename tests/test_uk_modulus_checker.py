@@ -1,78 +1,87 @@
-import dataclasses
 import pathlib
 
-from uk_modulus_check import SortCodeSubstitutionTable, UKModulusChecker, WeightTable
+import pytest
+
+from uk_modulus_check import (
+    SortCodeSubstitutionTable,
+    UKModulusChecker,
+    ValidationResult,
+    WeightTable,
+)
+
+DATA_DIR = pathlib.Path(__file__).resolve().parent / "data"
 
 
-@dataclasses.dataclass(slots=True, frozen=True, kw_only=True)
-class TestCase:
-    sort_code: str
-    account_number: str
-    expected_result: bool
-
-
-BASE_DIR = pathlib.Path(__file__).resolve().parent
-WEIGHTS = BASE_DIR / "data" / "weights.txt"
-SUBSTITUTIONS = BASE_DIR / "data" / "subs.txt"
-
-
-def _read_file(path: pathlib.Path) -> list[str]:
-    with open(path, "r") as file:
-        return file.readlines()
-
-
-def test_validate() -> None:
-    test_cases = [
-        TestCase(sort_code="89999", account_number="66374958", expected_result=True),
-        TestCase(sort_code="107999", account_number="88837491", expected_result=True),
-        TestCase(sort_code="202959", account_number="63748472", expected_result=True),
-        TestCase(sort_code="871427", account_number="46238510", expected_result=True),
-        TestCase(sort_code="872427", account_number="46238510", expected_result=True),
-        TestCase(sort_code="871427", account_number="9123496", expected_result=True),
-        TestCase(sort_code="871427", account_number="99123496", expected_result=True),
-        TestCase(sort_code="820000", account_number="73688637", expected_result=True),
-        TestCase(sort_code="827999", account_number="73988638", expected_result=True),
-        TestCase(sort_code="827101", account_number="28748352", expected_result=True),
-        TestCase(sort_code="134020", account_number="63849203", expected_result=True),
-        TestCase(sort_code="118765", account_number="64371389", expected_result=True),
-        TestCase(sort_code="200915", account_number="41011166", expected_result=True),
-        TestCase(sort_code="938611", account_number="7806039", expected_result=True),
-        TestCase(sort_code="938600", account_number="42368003", expected_result=True),
-        TestCase(sort_code="938063", account_number="55065200", expected_result=True),
-        TestCase(sort_code="772798", account_number="99345694", expected_result=True),
-        TestCase(sort_code="86090", account_number="6774744", expected_result=True),
-        TestCase(sort_code="309070", account_number="2355688", expected_result=True),
-        TestCase(sort_code="309070", account_number="12345668", expected_result=True),
-        TestCase(sort_code="309070", account_number="12345677", expected_result=True),
-        TestCase(sort_code="309070", account_number="99345694", expected_result=True),
-        TestCase(sort_code="938063", account_number="15764273", expected_result=False),
-        TestCase(sort_code="938063", account_number="15764264", expected_result=False),
-        TestCase(sort_code="938063", account_number="15763217", expected_result=False),
-        TestCase(sort_code="118764", account_number="64371388", expected_result=False),
-        TestCase(sort_code="203099", account_number="66831036", expected_result=False),
-        TestCase(sort_code="203099", account_number="58716970", expected_result=False),
-        TestCase(sort_code="89999", account_number="66374959", expected_result=False),
-        TestCase(sort_code="107999", account_number="88837493", expected_result=False),
-        TestCase(sort_code="74456", account_number="12345112", expected_result=True),
-        TestCase(sort_code="70116", account_number="34012583", expected_result=True),
-        TestCase(sort_code="74456", account_number="11104102", expected_result=True),
-        TestCase(sort_code="180002", account_number="190", expected_result=True),
-        # ANNA
-        TestCase(sort_code="040344", account_number="00000023", expected_result=True),
-        TestCase(sort_code="040344", account_number="000000120", expected_result=True),
-    ]
-
+@pytest.fixture(scope="module")
+def checker() -> UKModulusChecker:
     weight_table = WeightTable()
-    weight_table.reload(_read_file(WEIGHTS))
+    weight_table.reload((DATA_DIR / "weights.txt").read_text().splitlines())
 
     sort_code_substitution_table = SortCodeSubstitutionTable()
-    sort_code_substitution_table.reload(_read_file(SUBSTITUTIONS))
+    sort_code_substitution_table.reload((DATA_DIR / "subs.txt").read_text().splitlines())
 
-    checker = UKModulusChecker(weight_table, sort_code_substitution_table)
+    return UKModulusChecker(weight_table, sort_code_substitution_table)
 
-    for case in test_cases:
-        result = checker.validate(int(case.sort_code), int(case.account_number))
-        if result.result != case.expected_result:
-            print(
-                f"FAIL: S/C {case.sort_code} A/N {case.account_number} expected {case.expected_result} got {result}"
-            )
+
+def _passed(*, substitute_sort_code: int | None = None) -> ValidationResult:
+    return ValidationResult(result=True, known_sort_code=True, substitute_sort_code=substitute_sort_code)
+
+
+def _failed() -> ValidationResult:
+    return ValidationResult(result=False, known_sort_code=True, substitute_sort_code=None)
+
+
+def _unknown_sort_code() -> ValidationResult:
+    return ValidationResult(result=True, known_sort_code=False, substitute_sort_code=None)
+
+
+@pytest.mark.parametrize(
+    ("sort_code", "account_number", "expected"),
+    [
+        ("89999", "66374958", _passed()),
+        ("107999", "88837491", _passed()),
+        ("202959", "63748472", _passed()),
+        ("871427", "46238510", _passed()),
+        ("872427", "46238510", _passed()),
+        ("871427", "9123496", _passed()),
+        ("871427", "99123496", _passed()),
+        ("820000", "73688637", _passed()),
+        ("827999", "73988638", _passed()),
+        ("827101", "28748352", _passed()),
+        ("134020", "63849203", _passed()),
+        ("118765", "64371389", _passed()),
+        ("200915", "41011166", _passed()),
+        ("938611", "7806039", _passed()),
+        ("938600", "42368003", _passed()),
+        ("938063", "55065200", _passed()),
+        ("772798", "99345694", _passed()),
+        ("86090", "6774744", _passed()),
+        ("309070", "2355688", _passed()),
+        # Exception 9: validated against the substitute sort code 309634.
+        ("309070", "12345668", _passed(substitute_sort_code=309634)),
+        ("309070", "12345677", _passed()),
+        ("309070", "99345694", _passed()),
+        ("938063", "15764273", _failed()),
+        ("938063", "15764264", _failed()),
+        ("938063", "15763217", _failed()),
+        ("118764", "64371388", _failed()),
+        ("203099", "66831036", _failed()),
+        ("203099", "58716970", _failed()),
+        ("89999", "66374959", _failed()),
+        ("107999", "88837493", _failed()),
+        ("74456", "12345112", _passed()),
+        ("70116", "34012583", _passed()),
+        ("74456", "11104102", _passed()),
+        ("180002", "190", _passed()),
+        # ANNA: 040344 is absent from weights.txt, so these pass without a modulus check.
+        ("040344", "00000023", _unknown_sort_code()),
+        ("040344", "000000120", _unknown_sort_code()),
+    ],
+)
+def test_validate(
+    checker: UKModulusChecker,
+    sort_code: str,
+    account_number: str,
+    expected: ValidationResult,
+) -> None:
+    assert checker.validate(int(sort_code), int(account_number)) == expected
